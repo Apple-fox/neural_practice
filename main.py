@@ -2,7 +2,7 @@ import time
 import serial
 import cv2
 
-def take_photo():
+def take_photo(n):
     cap = cv2.VideoCapture(0)  # захват камеры
     o = 0
     while True:  # цикл позволяет снимать видео
@@ -16,7 +16,7 @@ def take_photo():
             print("error")
 
         if o == 50:
-            cv2.imwrite("camera.png", img)
+            cv2.imwrite("camera{}.png".format(n), img)
             break
 
     cap.release()
@@ -24,39 +24,38 @@ def take_photo():
     return
 
 # Установка соединения через последовательный порт
-ser = serial.Serial('COM3', 115200)
+ser = serial.Serial('COM5', 115200)
 time.sleep(2)
 
 # # примеры комманд
 # command = "G28\r\n"
 # ser.write(command.encode())
-# command = "G0 X100 Y100\r\n"
-# ser.write(command.encode())
-# command = "G0 X0 Y220\r\n"  # выдвигаем стол для фото
-# ser.write(command.encode())
-#
-# # делаем фото
-# take_photo()
-#
-# # продолжаем команды
-# command = "G4 S2\r\n"
-# ser.write(command.encode())
-# command = "G0 X110 Y110\r\n"
-# ser.write(command.encode())
-#
-# time.sleep(20)
-f = open("key_chain.gcode", "r")
+
+f = open("ear.gcode")
 a = f.readline()
+n = 0
 while(a):
     s = a.split(":")
-    if ("LAYER" in s[0] and "LAYER_COUNT" not in s[0] and s[1] != "0\n"):  # если попадается строка означающая смену слоя
-        command = "G0 X0 Y220\r\n"  # отправляем команду на выдвигание стола
+    if a[0] != ";":
+        command = a.strip("\n")
+        command = "{}\r\n".format(command)
         ser.write(command.encode())
-        take_photo()  # делаем снимок
-    else:
-        command = a
-        ser.write(command.encode())
-    a = f.readline()
-f.close()
+        b = ser.readline()
+        while(b != b'ok 0\r\n' and b != b'ok\r\n' and b != b'wait\r\n'):
+            print(b)
+            b = ser.readline()
 
+        print(a)
+    #else:
+        # if (("LAYER" in s[0]) and ("LAYER_COUNT" not in s[0]) and (s[1] != "0\n")):  # если попадается строка означающая смену слоя
+        #     command = "G0 X0 Y220\r\n"  # отправляем команду на выдвигание стола
+        #     ser.write(command.encode())
+        #     #take_photo(n)  # делаем снимок
+        #     n += 1
+        # elif(s[0] == ";TIME_ELAPSED"):
+        #     time.sleep(float(s[1]))
+    a = f.readline()
+
+f.close()
+time.sleep(30)
 ser.close()
