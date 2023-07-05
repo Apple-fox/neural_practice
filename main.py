@@ -56,34 +56,42 @@ while (a):
         command = a.strip("\n")
         command = "{}\r\n".format(command)
         ser.write(command.encode())
-        open("filik.txt", "a").write(command)
+    
         b = ser.readline()
+        
         while b != b'ok 0\r\n' and b != b'ok\r\n' and b != b'wait\r\n':
             print(b)
             b = ser.readline()
 
         print(a)
+        
     else:
+        
         if ";MESH:NONMESH" in a:  # если попадается строка означающая смену слоя
             command = "G1 F1500 E{}\r\n".format(str(float(com[3]) - 9.5))
             open("filik.txt", "a").write(command)
             ser.write(command.encode())
             b = ser.readline()
+            
             while b != b'ok 0\r\n' and b != b'ok\r\n' and b != b'wait\r\n':
                 print(b)
                 b = ser.readline()
+                
             command = "G0 X0 Y220; injected\r\n"  # отправляем команду на выдвигание стола
-            open("filik.txt", "a").write(command)
             ser.write(command.encode())
+            
             b = ser.readline()
+            
             while b != b'ok 0\r\n' and b != b'ok\r\n' and b != b'wait\r\n':
                 print(b)
                 b = ser.readline()
+                
             take_photo(n)  # делаем снимок
             n += 1
+            
             command = "G1 X{} Y{} Z{} E{}\r\n".format(com[0], com[1], com[2], com[3])
             ser.write(command.encode())
-            open("filik.txt", "a").write(command)
+            
             b = ser.readline()
             while b != b'ok 0\r\n' and b != b'ok\r\n' and b != b'wait\r\n':
                 print(b)
